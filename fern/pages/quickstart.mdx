@@ -4,18 +4,16 @@ subtitle: List your channels and queue your first post in three requests.
 ---
 
 This walkthrough assumes you have a Supabase access token for a user who is a member
-of at least one channel. See [Authentication](./authentication.mdx) for how to obtain one.
+of at least one channel. See [Authentication](authentication.mdx) for how to obtain one.
 
-<Steps>
-
-### Set your token
+## 1. Set your token
 
 ```bash
 export TEMPO_TOKEN="<your-supabase-access-token>"
 export TEMPO_BASE="https://tempoapp.hq/api"
 ```
 
-### List the channels you can access
+## 2. List the channels you can access
 
 ```bash
 curl "$TEMPO_BASE/channels" \
@@ -33,7 +31,7 @@ curl "$TEMPO_BASE/channels" \
 ]
 ```
 
-### Add a post to the queue
+## 3. Add a post to the queue
 
 Omit `scheduled_at` and Tempo auto-assigns the next open slot. Pass one to pin the post
 to an exact time (you'll get a `409` if that slot is taken).
@@ -42,13 +40,8 @@ to an exact time (you'll get a `409` if that slot is taken).
 curl -X POST "$TEMPO_BASE/posts" \
   -H "Authorization: Bearer $TEMPO_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{
-    "channel_id": "8f3c...",
-    "text": "Hello from the Tempo API"
-  }'
+  -d '{ "channel_id": "8f3c...", "text": "Hello from the Tempo API" }'
 ```
-
-</Steps>
 
 ## Same call, TypeScript SDK
 

@@ -1,0 +1,457 @@
+paths:
+  /automations:
+    delete:
+      x-fern-examples:
+        - query-parameters:
+            id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          response:
+            body:
+              ok: true
+    post:
+      x-fern-examples:
+        - request:
+            channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+            category_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+            slots:
+              - day_of_week: 2
+                time_of_day: '14:30'
+              - day_of_week: 5
+                time_of_day: '09:00'
+          response:
+            body:
+              id: 1c9e6679-7425-40de-944b-e07fc1f90ae7
+              channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+              category_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+              slots:
+                - day_of_week: 2
+                  time_of_day: '14:30'
+                  is_enabled: true
+                - day_of_week: 5
+                  time_of_day: '09:00'
+                  is_enabled: true
+    get:
+      x-fern-examples:
+        - query-parameters:
+            channel_id: channel_id
+          request:
+            channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          response:
+            body:
+              - id: d290f1ee-6c54-4b01-90e6-d701748f0851
+                channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                category_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                slots:
+                  - day_of_week: 1
+                    time_of_day: '09:00'
+                    is_enabled: true
+                  - day_of_week: 3
+                    time_of_day: '14:30'
+                    is_enabled: false
+              - id: 5a1b2c3d-4e5f-6789-abcd-ef0123456789
+                channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                category_id: 1a2b3c4d-5e6f-7081-92ab-cdef34567890
+                slots:
+                  - day_of_week: 0
+                    time_of_day: '08:00'
+                    is_enabled: true
+                  - day_of_week: 5
+                    time_of_day: '18:00'
+                    is_enabled: true
+  /owner/members:
+    delete:
+      x-fern-examples:
+        - query-parameters:
+            channel_id: channel_id
+            user_id: d290f1ee-6c54-4b01-90e6-d701748f0851
+          request:
+            channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          response:
+            body:
+              ok: true
+    patch:
+      x-fern-examples:
+        - request:
+            channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+            user_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+          response:
+            body:
+              ok: true
+    post:
+      x-fern-examples:
+        - request:
+            channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+            email: jane.doe@example.com
+            role: owner
+          response:
+            body:
+              user_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+              user_email: jane.doe@example.com
+              display_name: Jane Doe
+              role: owner
+    get:
+      x-fern-examples:
+        - query-parameters:
+            channel_id: channel_id
+          request:
+            channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          response:
+            body:
+              - user_id: d290f1ee-6c54-4b01-90e6-d701748f0851
+                user_email: alice.smith@example.com
+                display_name: Alice Smith
+                role: owner
+              - user_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                user_email: bob.jones@example.com
+                display_name: Bob Jones
+                role: admin
+              - user_id: f47ac10b-58cc-4372-a567-0e02b2c3d479
+                user_email: carol.white@example.com
+                display_name: Carol White
+                role: member
+  /categories:
+    delete:
+      x-fern-examples:
+        - query-parameters:
+            id: id
+          response:
+            body:
+              ok: true
+    post:
+      x-fern-examples:
+        - request:
+            channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+            name: Marketing Campaigns
+          response:
+            body:
+              id: 7b9c9f1e-8d3a-4f2a-9a1e-2d4f5b6c7d8e
+              channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+              name: Marketing Campaigns
+              color: bg-green-600
+              sort_order: 3
+    patch:
+      x-fern-examples:
+        - request:
+            id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          response:
+            body:
+              id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+              channel_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+              name: Marketing Campaign
+              color: '#FF5733'
+              sort_order: 2
+    get:
+      x-fern-examples:
+        - query-parameters:
+            channel_id: channel_id
+          request:
+            channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          response:
+            body:
+              - id: d290f1ee-6c54-4b01-90e6-d701748f0851
+                channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                name: Marketing Campaigns
+                color: '#FF5733'
+                sort_order: 1
+              - id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                name: Product Launches
+                color: '#33A1FF'
+                sort_order: 2
+              - id: f47ac10b-58cc-4372-a567-0e02b2c3d479
+                channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                name: Social Media
+                color: '#28A745'
+                sort_order: 3
+  /posts:
+    delete:
+      x-fern-examples:
+        - query-parameters:
+            id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          response:
+            body:
+              ok: true
+    get:
+      x-fern-examples:
+        - query-parameters:
+            channel_id: channel_id
+          response:
+            body:
+              - id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                channel_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                text: Excited to announce our new product launch next week! Stay tuned for updates.
+                status: pending
+                source: manual
+                audience: followers
+                paid_partnership: true
+                media_url: https://example.com/media/product-launch.jpg
+                media_type: image/jpeg
+                scheduled_at: '2024-01-15T09:30:00Z'
+                sort_order: 1
+                category_id: 1e4d5f7a-8b3c-4d2a-9f1e-123456789abc
+                retry_count: 1
+                x_post_id: '1456789012345678901'
+                published_at: '2024-01-15T09:30:00Z'
+                category:
+                  id: 1e4d5f7a-8b3c-4d2a-9f1e-123456789abc
+                  name: Product Updates
+                  color: '#FF5733'
+    post:
+      x-fern-examples:
+        - request:
+            channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+            text: Excited to announce our new product launch next week! Stay tuned for updates.
+          response:
+            body:
+              id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+              channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+              text: Excited to announce our new product launch next week! Stay tuned for updates.
+              status: pending
+              source: manual
+              audience: regular
+              paid_partnership: false
+              media_url: https://example.com/media/product-launch.jpg
+              media_type: image/jpeg
+              scheduled_at: '2024-01-15T09:30:00Z'
+              sort_order: 1
+              category_id: 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+              retry_count: 0
+              x_post_id: '1456789012345678901'
+              published_at: '2024-01-15T09:30:00Z'
+              category:
+                id: 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+                name: Product Updates
+                color: '#FF5733'
+    patch:
+      x-fern-examples:
+        - request:
+            id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          response:
+            body:
+              id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+              channel_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+              text: Excited to announce our new product launch next week! Stay tuned for updates.
+              status: pending
+              source: manual
+              audience: public
+              paid_partnership: false
+              media_url: https://example.com/media/image123.jpg
+              media_type: image/jpeg
+              scheduled_at: '2024-01-15T09:30:00Z'
+              sort_order: 1
+              category_id: 1e4e28f0-8f3a-4d2a-9f3b-2a1b3c4d5e6f
+              retry_count: 0
+              x_post_id: '1456789012345678901'
+              published_at: '2024-01-15T09:30:00Z'
+              category:
+                id: 1e4e28f0-8f3a-4d2a-9f3b-2a1b3c4d5e6f
+                name: Product Launch
+                color: '#FF5733'
+  /posts/send-now:
+    post:
+      x-fern-examples:
+        - request:
+            channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+            text: Excited to announce our new product launch today! Stay tuned for updates.
+          response:
+            body:
+              success: true
+              x_post_id: '1627384950123456789'
+  /schedule:
+    post:
+      x-fern-examples:
+        - request:
+            channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+            slots:
+              - day_of_week: 2
+                time_of_day: '14:30'
+              - day_of_week: 5
+                time_of_day: '09:00'
+          response:
+            body:
+              ok: true
+    get:
+      x-fern-examples:
+        - query-parameters:
+            channel_id: channel_id
+          request:
+            channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          response:
+            body:
+              - id: d290f1ee-6c54-4b01-90e6-d701748f0851
+                channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                day_of_week: 2
+                time_of_day: '14:30'
+                is_enabled: true
+              - id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                day_of_week: 4
+                time_of_day: '09:00'
+                is_enabled: false
+    delete:
+      x-fern-examples:
+        - query-parameters:
+            channel_id: channel_id
+          request:
+            channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          response:
+            body:
+              ok: true
+  /auth/reset-password:
+    post:
+      x-fern-examples:
+        - request:
+            email: user@example.com
+          response:
+            body:
+              message: If an account with that email exists, a password reset link has been sent.
+  /upload:
+    post:
+      x-fern-examples:
+        - request:
+            file: profile_picture.png
+            channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          response:
+            body:
+              url: https://tempoapp.hq/storage/uploads/3fa85f64-5717-4562-b3fc-2c963f66afa6/avatar/profile_picture.png
+  /cron/fill-queue:
+    post:
+      x-fern-examples:
+        - response:
+            body:
+              ok: true
+  /alerts/test:
+    post:
+      x-fern-examples:
+        - request:
+            channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          response:
+            body:
+              ok: true
+              configured: true
+  /activity/track:
+    post:
+      x-fern-examples:
+        - request:
+            channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+            event: login
+          response:
+            body:
+              ok: true
+  /cron/publish:
+    post:
+      x-fern-examples:
+        - response:
+            body:
+              published: 5
+              expired: 2
+  /earnings/guest-token:
+    get:
+      x-fern-examples:
+        - query-parameters:
+            channel_id: channel_id
+          request:
+            channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          response:
+            body:
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsX2lkIjoiM2ZhODVmNjQtNTcxNy00NTYyLWIzZmMtMmM5NjNmNjZhZmE2IiwiaWF0IjoxNjg2MjQ4MDAwLCJleHAiOjE2ODYyNTE2MDB9.4X9v1Q7Xq3v6J7v6X9v1Q7Xq3v6J7v6X9v1Q7Xq3v6J7v6X9v1Q7Xq3v6J7v6X9
+  /cron/purge-queue:
+    post:
+      x-fern-examples:
+        - response:
+            body:
+              ok: true
+  /channels:
+    get:
+      x-fern-examples:
+        - response:
+            body:
+              - id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                account_handle: '@technews'
+                display_name: Tech News Channel
+                membership_role: owner
+              - id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                account_handle: '@marketing_team'
+                display_name: Marketing Team
+                membership_role: admin
+              - id: 1c6b147e-8f3a-4d2a-9f3e-2a1b3c4d5e6f
+                account_handle: '@dev_updates'
+                display_name: Development Updates
+                membership_role: member
+  /activity:
+    get:
+      x-fern-examples:
+        - query-parameters:
+            channel_id: channel_id
+          request:
+            channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          response:
+            body:
+              - id: d290f1ee-6c54-4b01-90e6-d701748f0851
+                action: post.created
+                entity_type: queue
+                entity_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                user_id: f47ac10b-58cc-4372-a567-0e02b2c3d479
+                post_text: Launching our new feature today! Stay tuned for updates.
+                created_at: '2024-01-15T09:30:00Z'
+  /earnings/embed-url:
+    get:
+      x-fern-examples:
+        - query-parameters:
+            channel_id: channel_id
+          request:
+            channel_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          response:
+            body:
+              url: https://metabase.tempoapp.hq/embed/dashboard/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsX2lkIjoiM2ZhODVmNjQtNTcxNy00NTYyLWIzZmMtMmM5NjNmNjZhZmE2IiwiaWF0IjoxNjgyNjQ4MDAwLCJleHAiOjE2ODI2NTE2MDB9.4X9v7Q2X9v7Q2X9v7Q2X9v7Q2X9v7Q2X9v7Q2X9v7Q2
+  /posts/retry:
+    post:
+      x-fern-examples:
+        - request:
+            id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          response:
+            body:
+              id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+              channel_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+              text: Excited to announce our new product launch next week! Stay tuned for updates.
+              status: pending
+              source: manual
+              audience: followers
+              paid_partnership: false
+              media_url: https://example.com/media/product-launch.jpg
+              media_type: image/jpeg
+              scheduled_at: '2024-01-15T09:30:00Z'
+              sort_order: 2
+              category_id: 1e4e28d2-3f4a-4b6a-9f3a-2d5f7e8c9b1a
+              retry_count: 1
+              x_post_id: '1456789012345678901'
+              published_at: '2024-01-15T09:30:00Z'
+              category:
+                id: 1e4e28d2-3f4a-4b6a-9f3a-2d5f7e8c9b1a
+                name: Product Updates
+                color: '#FF5733'
+  /posts/restore:
+    post:
+      x-fern-examples:
+        - request:
+            id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          response:
+            body:
+              id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+              channel_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+              text: Excited to announce our new product launch next week! Stay tuned for updates.
+              status: pending
+              source: manual
+              audience: followers
+              paid_partnership: false
+              media_url: https://example.com/media/image123.jpg
+              media_type: image/jpeg
+              scheduled_at: '2024-01-15T09:30:00Z'
+              sort_order: 1
+              category_id: 1e4e28a0-8f3b-4d2a-9f3a-2b7e4c9d5f1a
+              retry_count: 0
+              x_post_id: '1456789012345678901'
+              published_at: '2024-01-15T09:30:00Z'
+              category:
+                id: 1e4e28a0-8f3b-4d2a-9f3a-2b7e4c9d5f1a
+                name: Product Launch
+                color: '#FF5733'

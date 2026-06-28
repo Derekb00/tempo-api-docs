@@ -1,8 +1,6 @@
-# Fern reads one source of truth (the OpenAPI spec) and generates
-# the docs site, type-safe SDKs, and a CLI from it.
 api:
   specs:
-    - openapi: ./openapi/openapi.yml
+    - openapi: openapi/openapi.yml
 
 groups:
   ts-sdk:
