@@ -1,0 +1,38 @@
+instances:
+  - url: tempo.docs.buildwithfern.com
+
+title: Tempo API Reference
+favicon: ./preview/favicon.svg
+
+colors:
+  accent-primary:
+    light: "#5B5BD6"
+    dark: "#8E8EF0"
+  background:
+    dark: "#0B0B0F"
+
+navbar-links:
+  - type: secondary
+    text: Dashboard
+    url: https://tempoapp.hq
+
+navigation:
+  - section: Get Started
+    contents:
+      - page: Introduction
+        path: ./pages/introduction.mdx
+      - page: Quickstart
+        path: ./pages/quickstart.mdx
+      - page: Authentication
+        path: ./pages/authentication.mdx
+  - section: Concepts
+    contents:
+      - page: Scheduling & Slots
+        path: ./pages/scheduling-model.mdx
+      - page: Errors & Status Codes
+        path: ./pages/errors.mdx
+  - api: API Reference
+    paginated: true
+
+# Docs-as-code: this whole site is versioned in Git, reviewed via PRs,
+# and rebuilt in CI on every merge.

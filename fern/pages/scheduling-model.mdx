@@ -1,0 +1,36 @@
+---
+title: Scheduling & Slots
+subtitle: How posts occupy time slots, and why you sometimes get a 409.
+---
+
+Tempo publishes on discrete **time slots** derived from a channel's weekly schedule
+(`GET /schedule`). Understanding slots explains most of the API's write behavior.
+
+## Auto-slotting vs. pinned times
+
+- **Auto-slotting** — create a post without `scheduled_at` and it is placed in the next
+  open slot, ordered by `sort_order`.
+- **Pinned** — pass a `scheduled_at` and the post is locked to that exact slot.
+
+## Slot conflicts return 409
+
+A database-level uniqueness guarantee allows only one active post per slot. If you pin a
+post to a slot that's already taken, or a reorder would collide, the API responds with:
+
+```json
+{ "error": "That time slot is already taken." }
+```
+
+with status `409 Conflict`. Handle it by choosing another time or letting Tempo
+auto-slot the post.
+
+## Category-pinned posts
+
+Posts created from an automation rule are tied to their category's slot and are excluded
+from manual reordering, so automated cadence stays intact.
+
+<Tip>
+When you save a full schedule with `POST /schedule`, Tempo re-slots existing manual,
+uncategorized posts to fit the new windows. A conflict during that re-slot also surfaces
+as `409`.
+</Tip>

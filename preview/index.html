@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Tempo API Reference — Fern docs preview</title>
+<style>
+  :root{
+    --bg:#0B0B0F; --panel:#111118; --panel2:#15151F; --border:#23232E;
+    --text:#E6E6EC; --muted:#9A9AA8; --accent:#8E8EF0; --accent2:#5B5BD6;
+    --get:#34D39A; --post:#8E8EF0; --patch:#F0B25B; --delete:#F0726B;
+    --code:#0E0E15; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:Inter,-apple-system,Segoe UI,Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .preview-banner{background:linear-gradient(90deg,#2a2a55,#1c1c2e);color:#cfcfff;text-align:center;
+    font-size:12.5px;padding:7px 12px;border-bottom:1px solid var(--border)}
+  .preview-banner code{background:#00000040;padding:1px 6px;border-radius:5px;font-family:var(--mono)}
+  .topbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:16px;
+    padding:12px 22px;background:rgba(11,11,15,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.2px}
+  .brand .dot{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+  .search{margin-left:8px;flex:0 0 280px;max-width:280px;background:var(--panel2);border:1px solid var(--border);
+    color:var(--muted);padding:7px 12px;border-radius:8px;font-size:13px}
+  .topnav{margin-left:auto;display:flex;gap:18px;font-size:13.5px;color:var(--muted)}
+  .layout{display:grid;grid-template-columns:248px minmax(0,1fr);gap:0;max-width:1180px;margin:0 auto}
+  .sidebar{border-right:1px solid var(--border);padding:24px 16px 60px;position:sticky;top:53px;height:calc(100vh - 53px);overflow:auto}
+  .sb-section{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:18px 8px 8px}
+  .sb-link{display:block;padding:6px 10px;border-radius:7px;color:var(--text);font-size:13.5px}
+  .sb-link:hover{background:var(--panel2)}
+  .sb-link.active{background:#1d1d2b;color:#fff}
+  .sb-ep{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:7px;font-size:12.5px;color:var(--muted)}
+  .sb-ep:hover{background:var(--panel2);color:var(--text)}
+  .verb{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 6px;border-radius:5px;min-width:46px;text-align:center}
+  .v-get{color:var(--get);background:#34d39a18}
+  .v-post{color:var(--post);background:#8e8ef018}
+  .v-patch{color:var(--patch);background:#f0b25b18}
+  .v-delete{color:var(--delete);background:#f0726b18}
+  .content{padding:34px 40px 120px;min-width:0}
+  h1{font-size:30px;margin:.2em 0 .1em;letter-spacing:-.4px}
+  h2{font-size:21px;margin:2em 0 .5em;padding-top:8px;border-top:1px solid var(--border)}
+  h3{font-size:16px;margin:1.5em 0 .4em}
+  .sub{color:var(--muted);font-size:16px;margin-top:2px}
+  p{margin:.6em 0}
+  code.inline{font-family:var(--mono);background:var(--panel2);border:1px solid var(--border);
+    padding:1px 6px;border-radius:5px;font-size:12.5px}
+  pre{background:var(--code);border:1px solid var(--border);border-radius:10px;padding:14px 16px;overflow:auto;
+    font-family:var(--mono);font-size:12.6px;line-height:1.55}
+  pre .k{color:var(--accent)} pre .s{color:#8fd9b0} pre .c{color:#6b6b7a} pre .n{color:#f0b25b}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+  .card h4{margin:0 0 4px;font-size:14px}
+  .card p{margin:0;color:var(--muted);font-size:13px}
+  table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13.5px}
+  th,td{border:1px solid var(--border);padding:8px 11px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  td code{font-family:var(--mono);font-size:12.5px;color:var(--accent)}
+  .endpoint{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 18px 4px;margin:18px 0}
+  .ep-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .ep-path{font-family:var(--mono);font-size:14px}
+  .ep-auth{margin-left:auto;font-size:11px;color:var(--muted);border:1px solid var(--border);padding:2px 8px;border-radius:20px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+  .note{border:1px solid #2c2c44;background:#15151f;border-left:3px solid var(--accent);padding:10px 14px;border-radius:8px;margin:12px 0;font-size:13.5px;color:#cfd0e6}
+  .pill{display:inline-block;font-size:11px;color:var(--muted);border:1px solid var(--border);border-radius:20px;padding:2px 9px;margin-right:6px}
+  @media(max-width:880px){.layout{grid-template-columns:1fr}.sidebar{display:none}.grid2{grid-template-columns:1fr}.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="preview-banner">Static preview of the Fern-generated site. Run <code>fern docs dev</code> in the repo for the live, interactive, searchable version.</div>
+
+<div class="topbar">
+  <div class="brand"><span class="dot"></span> Tempo</div>
+  <div class="search">Search or ask a question…</div>
+  <div class="topnav"><span>Guides</span><span>API Reference</span><span style="color:var(--accent)">Dashboard ↗</span></div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sb-section">Get Started</div>
+    <a class="sb-link active" href="#introduction">Introduction</a>
+    <a class="sb-link" href="#quickstart">Quickstart</a>
+    <a class="sb-link" href="#authentication">Authentication</a>
+    <div class="sb-section">Concepts</div>
+    <a class="sb-link" href="#scheduling">Scheduling &amp; Slots</a>
+    <a class="sb-link" href="#errors">Errors &amp; Status Codes</a>
+    <div class="sb-section">API Reference</div>
+    <a class="sb-ep" href="#ep-channels"><span class="verb v-get">GET</span> /channels</a>
+    <a class="sb-ep" href="#ep-posts-get"><span class="verb v-get">GET</span> /posts</a>
+    <a class="sb-ep" href="#ep-posts-post"><span class="verb v-post">POST</span> /posts</a>
+    <a class="sb-ep" href="#ep-sendnow"><span class="verb v-post">POST</span> /posts/send-now</a>
+    <a class="sb-ep" href="#ep-cat"><span class="verb v-patch">PATCH</span> /categories</a>
+    <a class="sb-ep" href="#ep-members"><span class="verb v-delete">DEL</span> /owner/members</a>
+    <a class="sb-ep" href="#ep-cron"><span class="verb v-post">POST</span> /cron/publish</a>
+  </aside>
+
+  <main class="content">
+    <h1 id="introduction">Introduction</h1>
+    <div class="sub">A REST API for scheduling and publishing posts to X (Twitter) across teams and accounts.</div>
+    <p>The Tempo API lets you connect X accounts, compose and queue posts, define recurring schedules, and publish automatically. It powers the Tempo dashboard and is the same surface a script, agent, or integration would call.</p>
+    <h3>Base URL</h3>
+    <pre><span class="c"># replace with your deployment origin</span>
+https://tempoapp.hq/api</pre>
+    <div class="cards">
+      <div class="card"><h4>Channels</h4><p>One connected X account. Every request is scoped to a channel and gated by your membership role.</p></div>
+      <div class="card"><h4>Queue &amp; Posts</h4><p>Posts live in a per-channel queue, auto-slotted into the next opening or pinned to a time.</p></div>
+      <div class="card"><h4>Schedule &amp; Automations</h4><p>A weekly schedule defines when the queue drains; rules materialize recurring posts.</p></div>
+      <div class="card"><h4>Publishing</h4><p>A cron engine publishes due posts, refreshes OAuth tokens, retries, and audit-logs everything.</p></div>
+    </div>
+
+    <h2 id="quickstart">Quickstart</h2>
+    <p>List your channels and queue your first post in three requests.</p>
+    <div class="grid2">
+      <div>
+        <h3>1 · Set your token</h3>
+        <pre><span class="k">export</span> TEMPO_TOKEN=<span class="s">"&lt;supabase-access-token&gt;"</span>
+<span class="k">export</span> TEMPO_BASE=<span class="s">"https://tempoapp.hq/api"</span></pre>
+        <h3>2 · List channels</h3>
+        <pre>curl <span class="s">"$TEMPO_BASE/channels"</span> \
+  -H <span class="s">"Authorization: Bearer $TEMPO_TOKEN"</span></pre>
+        <h3>3 · Queue a post</h3>
+        <pre>curl -X POST <span class="s">"$TEMPO_BASE/posts"</span> \
+  -H <span class="s">"Authorization: Bearer $TEMPO_TOKEN"</span> \
+  -H <span class="s">"Content-Type: application/json"</span> \
+  -d <span class="s">'{ "channel_id": "8f3c...", "text": "Hello from the Tempo API" }'</span></pre>
+      </div>
+      <div>
+        <h3>TypeScript SDK</h3>
+        <p style="color:var(--muted);font-size:13px;margin-top:0">Generated by Fern from the same spec, so it never drifts.</p>
+        <pre><span class="k">import</span> { TempoClient } <span class="k">from</span> <span class="s">"@tempo/sdk"</span>;
+
+<span class="k">const</span> tempo = <span class="k">new</span> <span class="n">TempoClient</span>({ token: process.env.TEMPO_TOKEN });
+
+<span class="k">const</span> channels = <span class="k">await</span> tempo.channels.list();
+<span class="k">await</span> tempo.posts.create({
+  channelId: channels[<span class="n">0</span>].id,
+  text: <span class="s">"Hello from the Tempo API"</span>,
+});</pre>
+        <div class="note">Omit <code class="inline">scheduled_at</code> and Tempo auto-assigns the next open slot. Pin a time and a taken slot returns <code class="inline">409</code>.</div>
+      </div>
+    </div>
+
+    <h2 id="authentication">Authentication</h2>
+    <p>Authenticate user endpoints with a Supabase-issued <strong>Bearer JWT</strong>. The server validates the token, then confirms you are a member of the target channel.</p>
+    <pre>Authorization: Bearer &lt;supabase-access-token&gt;</pre>
+    <table>
+      <tr><th>Role</th><th>Can do</th></tr>
+      <tr><td><code>member</code></td><td>Read channel data; create and manage posts</td></tr>
+      <tr><td><code>admin</code></td><td>+ manage categories and the schedule</td></tr>
+      <tr><td><code>owner</code></td><td>+ manage team members and alerts</td></tr>
+    </table>
+    <div class="note">Internal <code class="inline">/cron/*</code> endpoints authenticate with a shared <code class="inline">CRON_SECRET</code> instead of a user token.</div>
+
+    <h2 id="scheduling">Scheduling &amp; Slots</h2>
+    <p>Posts occupy discrete <strong>time slots</strong> from the channel's weekly schedule. A database-level uniqueness guarantee allows one active post per slot, so pinning to a taken slot returns:</p>
+    <pre>{ <span class="s">"error"</span>: <span class="s">"That time slot is already taken."</span> }   <span class="c">// 409 Conflict</span></pre>
+
+    <h2 id="errors">Errors &amp; Status Codes</h2>
+    <p>Every endpoint returns one predictable shape: <code class="inline">{ "error": "..." }</code>.</p>
+    <table>
+      <tr><th>Code</th><th>Meaning</th><th>Typical cause</th></tr>
+      <tr><td><code>400</code></td><td>Bad request</td><td>Missing required field</td></tr>
+      <tr><td><code>401</code></td><td>Unauthorized</td><td>Missing/invalid token</td></tr>
+      <tr><td><code>403</code></td><td>Forbidden</td><td>Not a member, or role too low</td></tr>
+      <tr><td><code>404</code></td><td>Not found</td><td>Resource does not exist</td></tr>
+      <tr><td><code>409</code></td><td>Conflict</td><td>Scheduling slot already taken</td></tr>
+      <tr><td><code>500</code></td><td>Server error</td><td>Upstream/config failure</td></tr>
+    </table>
+
+    <h1 id="apiref" style="margin-top:1.4em">API Reference</h1>
+    <div class="sub">Generated from the OpenAPI source of truth. A few representative endpoints shown in this preview.</div>
+
+    <div class="endpoint" id="ep-channels">
+      <div class="ep-head"><span class="verb v-get">GET</span><span class="ep-path">/channels</span><span class="ep-auth">Bearer JWT</span></div>
+      <p>Returns every channel the authenticated user is a member of, with their role.</p>
+      <h3>200 — Response</h3>
+      <pre>[
+  {
+    <span class="s">"id"</span>: <span class="s">"8f3c..."</span>,
+    <span class="s">"account_handle"</span>: <span class="s">"yourbrand"</span>,
+    <span class="s">"display_name"</span>: <span class="s">"Your Brand"</span>,
+    <span class="s">"membership_role"</span>: <span class="s">"owner"</span>
+  }
+]</pre>
+    </div>
+
+    <div class="endpoint" id="ep-posts-get">
+      <div class="ep-head"><span class="verb v-get">GET</span><span class="ep-path">/posts</span><span class="ep-auth">Bearer JWT</span></div>
+      <p>List queue posts for a channel.</p>
+      <table>
+        <tr><th>Parameter</th><th>In</th><th>Description</th></tr>
+        <tr><td><code>channel_id</code> <span class="pill">required</span></td><td>query</td><td>Channel to scope to</td></tr>
+        <tr><td><code>view</code></td><td>query</td><td><code>queue</code> (default), <code>staged</code>, or <code>sent</code></td></tr>
+      </table>
+    </div>
+
+    <div class="endpoint" id="ep-posts-post">
+      <div class="ep-head"><span class="verb v-post">POST</span><span class="ep-path">/posts</span><span class="ep-auth">Bearer JWT</span></div>
+      <p>Add a manual post to the queue.</p>
+      <div class="grid2">
+        <div><h3>Request body</h3>
+        <pre>{
+  <span class="s">"channel_id"</span>: <span class="s">"8f3c..."</span>,
+  <span class="s">"text"</span>: <span class="s">"Launch day is here"</span>,
+  <span class="s">"scheduled_at"</span>: <span class="k">null</span>,
+  <span class="s">"category_id"</span>: <span class="k">null</span>
+}</pre></div>
+        <div><h3>Responses</h3>
+        <table>
+          <tr><th>Code</th><th>Meaning</th></tr>
+          <tr><td><code>200</code></td><td>Created post</td></tr>
+          <tr><td><code>400</code></td><td>Missing channel_id or text</td></tr>
+          <tr><td><code>403</code></td><td>Not a member</td></tr>
+          <tr><td><code>409</code></td><td>Slot already taken</td></tr>
+        </table></div>
+      </div>
+    </div>
+
+    <div class="endpoint" id="ep-sendnow">
+      <div class="ep-head"><span class="verb v-post">POST</span><span class="ep-path">/posts/send-now</span><span class="ep-auth">Bearer JWT</span></div>
+      <p>Publish straight to X, bypassing the queue, refreshing OAuth tokens if needed.</p>
+    </div>
+
+    <div class="endpoint" id="ep-cat">
+      <div class="ep-head"><span class="verb v-patch">PATCH</span><span class="ep-path">/categories</span><span class="ep-auth">owner / admin</span></div>
+      <p>Update a category's name or color. Role-gated server-side.</p>
+    </div>
+
+    <div class="endpoint" id="ep-members">
+      <div class="ep-head"><span class="verb v-delete">DELETE</span><span class="ep-path">/owner/members</span><span class="ep-auth">owner only</span></div>
+      <p>Remove a member from the channel.</p>
+    </div>
+
+    <div class="endpoint" id="ep-cron">
+      <div class="ep-head"><span class="verb v-post">POST</span><span class="ep-path">/cron/publish</span><span class="ep-auth">CRON_SECRET</span></div>
+      <p>Internal. Claims due posts, publishes to X, retries, and alerts. Returns a run summary.</p>
+      <pre>{ <span class="s">"published"</span>: <span class="n">7</span>, <span class="s">"expired"</span>: <span class="n">1</span> }</pre>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Highlight the sidebar link for the section currently in view.
+  const links=[...document.querySelectorAll('.sb-link, .sb-ep')];
+  const map=new Map(links.map(l=>[l.getAttribute('href').slice(1),l]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(l=>l.classList.remove('active'));
+    const m=map.get(e.target.id); if(m)m.classList.add('active');}})},{rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('[id]').forEach(el=>{if(map.has(el.id))obs.observe(el)});
+</script>
+</body>
+</html>

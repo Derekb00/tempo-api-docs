@@ -1,0 +1,47 @@
+---
+title: Authentication
+subtitle: Bearer tokens, channel membership, and roles.
+---
+
+## User requests: Bearer JWT
+
+Authenticate user-facing endpoints with a Supabase-issued access token in the
+`Authorization` header:
+
+```bash
+Authorization: Bearer <supabase-access-token>
+```
+
+The server validates the token, resolves your user, and then checks that you are a
+member of the channel named in the request (`channel_id` query param or body field).
+
+- Missing or invalid token: `401 Unauthorized`
+- Valid token but not a member of the channel: `403 Forbidden`
+
+## Roles
+
+Every membership carries one of three roles. Mutating endpoints enforce a minimum role
+server-side.
+
+| Role | Can do |
+| --- | --- |
+| `member` | Read channel data; create and manage posts in the queue |
+| `admin` | Everything a member can, plus manage categories and the schedule |
+| `owner` | Everything, plus manage team members and alerts |
+
+<Note>
+Role checks happen on the server after membership is confirmed. A request from a
+`member` to an owner-only endpoint returns `403 Forbidden`, never a partial result.
+</Note>
+
+## Internal cron requests: shared secret
+
+The `/cron/*` endpoints are triggered by a scheduler, not by users. They authenticate
+with a shared secret instead of a user token:
+
+```bash
+Authorization: Bearer <CRON_SECRET>
+```
+
+Any other caller receives `401 Unauthorized`. These endpoints are documented for
+completeness and operational transparency; they are not meant for general clients.

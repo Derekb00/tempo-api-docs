@@ -1,0 +1,61 @@
+---
+title: Introduction
+subtitle: A REST API for scheduling and publishing posts to X (Twitter) across teams and accounts.
+---
+
+The Tempo API lets you connect X (Twitter) accounts, compose and queue posts, define
+recurring posting schedules, and publish automatically. It powers the Tempo dashboard
+and is the same surface a script, agent, or integration would call.
+
+## Base URL
+
+All endpoints are served under your deployment origin:
+
+```
+https://tempoapp.hq/api
+```
+
+## How it fits together
+
+<CardGroup cols={2}>
+  <Card title="Channels" icon="hashtag">
+    A channel is one connected X account. Every request is scoped to a channel, and
+    your access is determined by your membership role on it.
+  </Card>
+  <Card title="Queue & Posts" icon="list">
+    Posts live in a per-channel queue. They are either dropped into the next open
+    time slot or pinned to a specific slot on the schedule.
+  </Card>
+  <Card title="Schedule & Automations" icon="calendar">
+    A weekly schedule defines when the queue drains. Automation rules materialize
+    recurring posts for a category on selected days and times.
+  </Card>
+  <Card title="Publishing" icon="paper-plane">
+    A cron-driven engine publishes due posts to X, refreshes OAuth tokens, retries
+    failures, and records every action to an audit log.
+  </Card>
+</CardGroup>
+
+## Authentication at a glance
+
+Most endpoints require a Supabase-issued **Bearer JWT** and verify that you are a
+member of the target channel. A small set of internal **cron** endpoints authenticate
+with a shared secret instead. See [Authentication](./authentication.mdx) for details.
+
+## Resource overview
+
+| Area | Endpoints |
+| --- | --- |
+| Channels | `GET /channels` |
+| Posts & queue | `GET/POST/PATCH/DELETE /posts`, `/posts/send-now`, `/posts/retry`, `/posts/restore` |
+| Categories | `GET/POST/PATCH/DELETE /categories` |
+| Schedule | `GET/POST/DELETE /schedule` |
+| Automations | `GET/POST/DELETE /automations` |
+| Team (owner) | `GET/POST/PATCH/DELETE /owner/members` |
+| Earnings | `GET /earnings/embed-url`, `GET /earnings/guest-token` |
+| Media | `POST /upload` |
+| User | `GET/PATCH /user/theme` |
+| Auth | `POST /auth/reset-password` |
+| Activity | `GET /activity`, `POST /activity/track` |
+| Alerts | `POST /alerts/test` |
+| Cron (internal) | `POST /cron/publish`, `/cron/fill-queue`, `/cron/purge-queue` |

@@ -1,0 +1,29 @@
+---
+title: Errors & Status Codes
+subtitle: One predictable error shape across every endpoint.
+---
+
+Errors return a JSON body with a single human-readable `error` field:
+
+```json
+{ "error": "channel_id required" }
+```
+
+(A few endpoints, such as password reset, intentionally return a neutral `message`
+instead to avoid leaking whether an account exists.)
+
+## Status codes
+
+| Code | Meaning | Typical cause |
+| --- | --- | --- |
+| `400` | Bad request | Missing `channel_id`, `text`, or another required field |
+| `401` | Unauthorized | Missing or invalid Bearer token (or wrong `CRON_SECRET`) |
+| `403` | Forbidden | Not a member of the channel, or role too low for the action |
+| `404` | Not found | The referenced post, category, or member does not exist |
+| `409` | Conflict | A scheduling slot is already taken |
+| `500` | Server error | Upstream data or configuration failure |
+
+<Warning>
+Write endpoints validate input before touching data. A `400` means nothing changed;
+it is always safe to fix the request and retry.
+</Warning>

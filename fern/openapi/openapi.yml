@@ -1,0 +1,842 @@
+openapi: 3.1.0
+info:
+  title: Tempo API
+  version: "1.0.0"
+  description: >
+    REST API for Tempo, a multi-tenant scheduling and publishing platform for X (Twitter).
+    Connect channels, queue and schedule posts, manage your team, and let a cron-driven
+    engine publish automatically. Authored from the application's Next.js route handlers.
+servers:
+  - url: https://tempoapp.hq/api
+    description: Production base URL
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Channels
+  - name: Posts
+  - name: Categories
+  - name: Schedule
+  - name: Automations
+  - name: Team
+  - name: Earnings
+  - name: Media
+  - name: User
+  - name: Auth
+  - name: Activity
+  - name: Alerts
+  - name: Cron
+
+paths:
+  /channels:
+    get:
+      tags: [Channels]
+      summary: List channels
+      description: Returns every channel the authenticated user is a member of, with their role.
+      responses:
+        "200":
+          description: Channels the user can access
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Channel" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /posts:
+    get:
+      tags: [Posts]
+      summary: List queue posts
+      parameters:
+        - $ref: "#/components/parameters/ChannelIdQuery"
+        - name: view
+          in: query
+          required: false
+          schema: { type: string, enum: [queue, staged, sent] }
+          description: "`queue` (default) returns pending/draft/failed; `staged` and `sent` filter accordingly."
+      responses:
+        "200":
+          description: Posts in the requested view
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Post" } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [Posts]
+      summary: Add a post to the queue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreatePostRequest" }
+      responses:
+        "200":
+          description: Created post
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Post" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/SlotConflict" }
+    patch:
+      tags: [Posts]
+      summary: Update a post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id: { type: string, format: uuid }
+                text: { type: string }
+                scheduled_at: { type: string, format: date-time, nullable: true }
+                category_id: { type: string, format: uuid, nullable: true }
+                status: { $ref: "#/components/schemas/PostStatus" }
+      responses:
+        "200":
+          description: Updated post
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Post" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/SlotConflict" }
+    delete:
+      tags: [Posts]
+      summary: Soft-delete a post
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /posts/send-now:
+    post:
+      tags: [Posts]
+      summary: Publish a post immediately
+      description: Bypasses the queue and publishes straight to X, refreshing OAuth tokens if needed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreatePostRequest" }
+      responses:
+        "200":
+          description: Publish result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  x_post_id: { type: string, nullable: true }
+        "400":
+          description: Missing fields or no X credentials on the channel
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /posts/retry:
+    post:
+      tags: [Posts]
+      summary: Re-queue a failed post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Re-queued post
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Post" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/SlotConflict" }
+
+  /posts/restore:
+    post:
+      tags: [Posts]
+      summary: Restore a soft-deleted post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Restored post
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Post" }
+        "400":
+          description: Post is not deleted, or an invalid stored value was found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /categories:
+    get:
+      tags: [Categories]
+      summary: List categories
+      parameters: [ { $ref: "#/components/parameters/ChannelIdQuery" } ]
+      responses:
+        "200":
+          description: Categories for the channel
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Category" } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [Categories]
+      summary: Create a category
+      description: Requires `owner` or `admin` role.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [channel_id, name]
+              properties:
+                channel_id: { type: string, format: uuid }
+                name: { type: string }
+                color: { type: string, default: "bg-blue-500" }
+      responses:
+        "200":
+          description: Created category
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Category" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    patch:
+      tags: [Categories]
+      summary: Update a category
+      description: Requires `owner` or `admin` role.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id: { type: string, format: uuid }
+                name: { type: string }
+                color: { type: string }
+      responses:
+        "200":
+          description: Updated category
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Category" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    delete:
+      tags: [Categories]
+      summary: Soft-delete a category
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /schedule:
+    get:
+      tags: [Schedule]
+      summary: Get the weekly schedule
+      parameters: [ { $ref: "#/components/parameters/ChannelIdQuery" } ]
+      responses:
+        "200":
+          description: Schedule slots
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/ScheduleSlot" } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [Schedule]
+      summary: Replace the weekly schedule
+      description: Requires `owner` or `admin`. Replaces all slots and re-slots manual posts.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [channel_id, slots]
+              properties:
+                channel_id: { type: string, format: uuid }
+                slots:
+                  type: array
+                  items: { $ref: "#/components/schemas/ScheduleSlotInput" }
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/SlotConflict" }
+    delete:
+      tags: [Schedule]
+      summary: Clear schedule slots
+      parameters: [ { $ref: "#/components/parameters/ChannelIdQuery" } ]
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /automations:
+    get:
+      tags: [Automations]
+      summary: List automation rules
+      parameters: [ { $ref: "#/components/parameters/ChannelIdQuery" } ]
+      responses:
+        "200":
+          description: Automation rules
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/AutomationRule" } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [Automations]
+      summary: Create an automation rule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [channel_id, category_id, slots]
+              properties:
+                channel_id: { type: string, format: uuid }
+                category_id: { type: string, format: uuid }
+                slots:
+                  type: array
+                  items: { $ref: "#/components/schemas/ScheduleSlotInput" }
+      responses:
+        "200":
+          description: Created rule
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AutomationRule" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/SlotConflict" }
+    delete:
+      tags: [Automations]
+      summary: Delete an automation rule
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /owner/members:
+    get:
+      tags: [Team]
+      summary: List team members
+      description: Owner-only. Lists everyone with access to the channel.
+      parameters: [ { $ref: "#/components/parameters/ChannelIdQuery" } ]
+      responses:
+        "200":
+          description: Members
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Member" } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [Team]
+      summary: Invite a member by email
+      description: Owner-only. Creates or links a user and grants channel access.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [channel_id, email, role]
+              properties:
+                channel_id: { type: string, format: uuid }
+                email: { type: string, format: email }
+                role: { $ref: "#/components/schemas/Role" }
+      responses:
+        "200":
+          description: Created membership
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Member" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    patch:
+      tags: [Team]
+      summary: Change a member's role or display name
+      description: Owner-only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [channel_id, user_id]
+              properties:
+                channel_id: { type: string, format: uuid }
+                user_id: { type: string, format: uuid }
+                role: { $ref: "#/components/schemas/Role" }
+                display_name: { type: string, nullable: true }
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    delete:
+      tags: [Team]
+      summary: Remove a member
+      description: Owner-only.
+      parameters:
+        - { $ref: "#/components/parameters/ChannelIdQuery" }
+        - name: user_id
+          in: query
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /earnings/embed-url:
+    get:
+      tags: [Earnings]
+      summary: Get a signed earnings dashboard URL
+      description: Returns a short-lived signed Metabase static-embed URL for the channel.
+      parameters: [ { $ref: "#/components/parameters/ChannelIdQuery" } ]
+      responses:
+        "200":
+          description: Signed embed URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string, format: uri }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "500":
+          description: Earnings embedding is not configured on the server
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /earnings/guest-token:
+    get:
+      tags: [Earnings]
+      summary: Get a signed earnings guest token
+      description: Returns a short-lived HS256 guest token for modular embed components.
+      parameters: [ { $ref: "#/components/parameters/ChannelIdQuery" } ]
+      responses:
+        "200":
+          description: Signed token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /upload:
+    post:
+      tags: [Media]
+      summary: Upload media
+      description: >
+        Uploads an image, GIF, or video to object storage and returns its public URL.
+        Validates MIME type and per-type size limits.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, channel_id]
+              properties:
+                file: { type: string, format: binary }
+                channel_id: { type: string, format: uuid }
+                kind: { type: string, enum: [avatar], description: "Optional. Tighter limits for avatars." }
+      responses:
+        "200":
+          description: Stored media
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string, format: uri }
+        "400":
+          description: Missing file/channel, unsupported type, or file too large
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /user/theme:
+    get:
+      tags: [User]
+      summary: Get the saved theme
+      responses:
+        "200":
+          description: Current theme
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Theme" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    patch:
+      tags: [User]
+      summary: Save the theme
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Theme" }
+      responses:
+        "200":
+          description: Saved theme
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Theme" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Request a password reset
+      description: >
+        Public endpoint. Always returns a neutral message so it never reveals whether
+        an account exists.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        "200":
+          description: Neutral acknowledgement
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+        "400":
+          description: Missing or invalid email
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /activity:
+    get:
+      tags: [Activity]
+      summary: Get the activity log
+      description: Returns the channel's audit feed of actions.
+      parameters: [ { $ref: "#/components/parameters/ChannelIdQuery" } ]
+      responses:
+        "200":
+          description: Activity entries
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/ActivityEntry" } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /activity/track:
+    post:
+      tags: [Activity]
+      summary: Record a client auth event
+      description: Lightweight endpoint the client pings on sign-in/sign-out.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [channel_id, event]
+              properties:
+                channel_id: { type: string, format: uuid }
+                event: { type: string, enum: [login, logout] }
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /alerts/test:
+    post:
+      tags: [Alerts]
+      summary: Send a test alert
+      description: Owner-only. Fires a test alert to the configured Discord webhook.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [channel_id]
+              properties:
+                channel_id: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Alert result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  configured: { type: boolean }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /cron/publish:
+    post:
+      tags: [Cron]
+      summary: Publish due posts
+      description: Internal. Claims due posts, publishes to X, refreshes tokens, retries, and alerts.
+      security:
+        - cronAuth: []
+      responses:
+        "200":
+          description: Publish run summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  published: { type: integer }
+                  expired: { type: integer }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /cron/fill-queue:
+    post:
+      tags: [Cron]
+      summary: Materialize upcoming posts from automation rules
+      description: Internal. Generates the next several days of posts from automation rules.
+      security:
+        - cronAuth: []
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /cron/purge-queue:
+    post:
+      tags: [Cron]
+      summary: Purge expired soft-deleted rows
+      description: Internal. Permanently deletes soft-deleted posts past the retention window.
+      security:
+        - cronAuth: []
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase-issued user access token.
+    cronAuth:
+      type: http
+      scheme: bearer
+      description: Shared CRON_SECRET for internal scheduler calls.
+
+  parameters:
+    ChannelIdQuery:
+      name: channel_id
+      in: query
+      required: true
+      schema: { type: string, format: uuid }
+      description: The channel the request is scoped to.
+
+  responses:
+    Ok:
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              ok: { type: boolean, example: true }
+    BadRequest:
+      description: A required field is missing or invalid
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Unauthorized:
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Forbidden:
+      description: Not a member of the channel, or role too low
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    SlotConflict:
+      description: The target scheduling slot is already taken
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error: { type: string, example: "channel_id required" }
+    Role:
+      type: string
+      enum: [owner, admin, member]
+    PostStatus:
+      type: string
+      enum: [pending, draft, staged, published, failed]
+    Channel:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        account_handle: { type: string }
+        display_name: { type: string, nullable: true }
+        membership_role: { $ref: "#/components/schemas/Role" }
+    CreatePostRequest:
+      type: object
+      required: [channel_id, text]
+      properties:
+        channel_id: { type: string, format: uuid }
+        text: { type: string }
+        audience: { type: string, default: "regular" }
+        paid_partnership: { type: boolean, default: false }
+        media_url: { type: string, format: uri, nullable: true }
+        media_type: { type: string, nullable: true }
+        scheduled_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Omit to auto-slot into the next open time; provide to pin to an exact slot.
+        sort_order: { type: integer, nullable: true }
+        status: { $ref: "#/components/schemas/PostStatus" }
+        category_id: { type: string, format: uuid, nullable: true }
+    Post:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        channel_id: { type: string, format: uuid }
+        text: { type: string }
+        status: { $ref: "#/components/schemas/PostStatus" }
+        source: { type: string, enum: [manual, automation] }
+        audience: { type: string }
+        paid_partnership: { type: boolean }
+        media_url: { type: string, format: uri, nullable: true }
+        media_type: { type: string, nullable: true }
+        scheduled_at: { type: string, format: date-time, nullable: true }
+        sort_order: { type: integer, nullable: true }
+        category_id: { type: string, format: uuid, nullable: true }
+        retry_count: { type: integer }
+        x_post_id: { type: string, nullable: true }
+        published_at: { type: string, format: date-time, nullable: true }
+        category:
+          $ref: "#/components/schemas/CategorySummary"
+    Category:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        channel_id: { type: string, format: uuid }
+        name: { type: string }
+        color: { type: string }
+        sort_order: { type: integer }
+    CategorySummary:
+      type: object
+      nullable: true
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        color: { type: string }
+    ScheduleSlot:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        channel_id: { type: string, format: uuid }
+        day_of_week: { type: integer, minimum: 0, maximum: 6 }
+        time_of_day: { type: string, example: "09:00" }
+        is_enabled: { type: boolean }
+    ScheduleSlotInput:
+      type: object
+      required: [day_of_week, time_of_day]
+      properties:
+        day_of_week: { type: integer, minimum: 0, maximum: 6 }
+        time_of_day: { type: string, example: "09:00" }
+        is_enabled: { type: boolean, default: true }
+    AutomationRule:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        channel_id: { type: string, format: uuid }
+        category_id: { type: string, format: uuid }
+        slots:
+          type: array
+          items: { $ref: "#/components/schemas/ScheduleSlotInput" }
+    Member:
+      type: object
+      properties:
+        user_id: { type: string, format: uuid }
+        user_email: { type: string, format: email }
+        display_name: { type: string, nullable: true }
+        role: { $ref: "#/components/schemas/Role" }
+    ActivityEntry:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        action: { type: string, example: "post.created" }
+        entity_type: { type: string, example: "queue" }
+        entity_id: { type: string, format: uuid, nullable: true }
+        user_id: { type: string, format: uuid }
+        post_text: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+    Theme:
+      type: object
+      properties:
+        theme:
+          type: string
+          enum: [atlas, operator, terminal, signal, ember]
